@@ -135,7 +135,6 @@ def delete_user(phone_number, user_name):
 
     conn.close()
 def get_user(phone_number, user_name):
-    print(phone_number, user_name)
     # Connect to a database (or create one if it doesn't exist)
     conn = sqlite3.connect('my_database.db')
 
@@ -153,6 +152,12 @@ def get_user(phone_number, user_name):
     results = cursor.fetchall()
     conn.close()
     return results
+
+# TODO: Add functions here
+def create_new_transaction(name,phonenumber,telecom_pay,telecom_receive,usage):
+    print(name,phonenumber,telecom_pay,telecom_receive,usage)
+    print("create new transaction")
+    return
 
 # init_database()
 # add_user("0912345687", "Alice", "Basic", "Provider1")
@@ -186,6 +191,18 @@ def add_user_route():
 def delete_user_route(phone_number, username):
     try:
         delete_user(phone_number, username)
+    except:
+        return "Error", 400
+    return "OK", 200
+
+@app.route('/create_transaction/<phone_number>/<username>', methods=['POST'])
+def createTransaction(phone_number, username):
+    data = request.json
+    telecom_pay = data.get('telecom_pay')
+    telecom_receive = data.get('telecom_receive')
+    usage = data.get('usage')
+    try:
+        create_new_transaction(username,phone_number,telecom_pay,telecom_receive,usage)
     except:
         return "Error", 400
     return "OK", 200

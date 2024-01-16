@@ -18,12 +18,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-export function Login() {
+export function Login({ provider }: { provider: string }) {
   const [formData, setFormData] = useState({
     userName: 'enter your name',
     phoneNumber: '09xxxxxxxx',
     plan: 'which Plan',
-    provider: '--- Telecom',
+    provider: provider,
+    usage: 0,
   });
 
   const isSignUpNAN = formData.phoneNumber==="" || formData.userName==="" || formData.plan==="" || formData.provider==="";
@@ -31,10 +32,18 @@ export function Login() {
   const isLoginNAN = formData.phoneNumber==="" || formData.userName==="" ;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
+    if (e.target.id === 'usage') {
+      setFormData({
+        ...formData,
+        [e.target.id]: parseInt(e.target.value),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.id]: e.target.value,
+      });
+      console.log(formData);
+    }
     console.log(formData);
   };
   const HandleDID = async () => {
@@ -42,16 +51,18 @@ export function Login() {
     try {
       const res = await axios.get(`http://127.0.0.1:5000/get_provider/${formData.phoneNumber}/${formData.userName}`);
       console.log(res.data);
-      if (res.data === 'Taiwan_Telecom') {
+      if (res.data === 'A_Telecom' || res.data === 'B_Telecom' || res.data === 'C_Telecom') {
+        if (res.data === provider) {
+          alert('You are already the member of this telecom');
+          return;
+        }
         //link to vietel
-        window.location.href = './Taiwan_Telecom';
-      } else if (res.data === 'taiwan101') {
-        //link to vina
-        window.location.href = './taiwan101';
-      }
-      else if (res.data === 'chunghau') {
-        //link to mobi
-        window.location.href = './chunghau';
+        alert('Login success');
+        await axios.post(`http://127.0.0.1:5000/create_transaction/${formData.phoneNumber}/${formData.userName}`, {
+          "telecom_receive": res.data,
+          "telecom_pay": provider,
+          "usage": formData.usage
+          });
       }
       else{
         alert('Wrong user name or phone number');
@@ -96,10 +107,10 @@ export function Login() {
               <Label htmlFor="plan">Plan</Label>
               <Input id="plan" defaultValue={formData.plan}  onChange={(e)=>handleChange(e)}/>
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <Label htmlFor="provider">Provider</Label>
               <Input id="provider" defaultValue={formData.provider}  onChange={(e)=>handleChange(e)}/>
-            </div>
+            </div> */}
           </CardContent>
           <CardFooter>
             <Button onClick={SignUpDID} disabled={isSignUpNAN}>Sign up</Button>
@@ -109,7 +120,7 @@ export function Login() {
       <TabsContent value="Login">
         <Card>
           <CardHeader>
-            <CardTitle>Login</CardTitle>
+            <CardTitle>Get Service</CardTitle>
             <CardDescription>
                 Get DID from your Telcom
             </CardDescription>
@@ -123,9 +134,13 @@ export function Login() {
               <Label htmlFor="new">PhoneNumber</Label>
               <Input id="phoneNumber"  defaultValue={formData.phoneNumber} onChange={(e)=>handleChange(e)}/>
             </div>
+            <div className="space-y-1">
+              <Label htmlFor="new">usage</Label>
+              <Input id="usage" type='number' defaultValue={formData.usage} onChange={(e)=>handleChange(e)}/>
+            </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={HandleDID} disabled={isLoginNAN}>Login</Button>
+            <Button onClick={HandleDID} disabled={isLoginNAN}>Get Service</Button>
           </CardFooter>
         </Card>
       </TabsContent>
