@@ -58,9 +58,9 @@ export function Login({ provider }: { provider: string }) {
         }
         //link to vietel
         alert('Login success');
-        await axios.post(`http://127.0.0.1:5000/create_transaction/${formData.phoneNumber}/${formData.userName}`, {
-          "telecom_receive": res.data,
-          "telecom_pay": provider,
+        await axios.post(`http://127.0.0.1:5000/${provider}/transaction/add`, {
+          "user": formData.userName,
+          "telecom_pay": res.data,
           "usage": formData.usage
           });
       }

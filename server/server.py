@@ -2,6 +2,9 @@ import hashlib
 import sqlite3
 from flask import Flask, request
 from flask_cors import CORS
+from transaction import TransactionClass
+from user import UserClass
+from clear import ClearClass
 
 def hash_phone_number(phone_number):
     # Convert the phone number to a byte string
@@ -153,14 +156,6 @@ def get_user(phone_number, user_name):
     conn.close()
     return results
 
-# TODO: Add functions here
-def create_new_transaction(name,phonenumber,telecom_pay,telecom_receive,usage):
-    print(name,phonenumber,telecom_pay,telecom_receive,usage)
-    print("create new transaction")
-    return
-
-# init_database()
-# add_user("0912345687", "Alice", "Basic", "Provider1")
 
 
 
@@ -195,17 +190,82 @@ def delete_user_route(phone_number, username):
         return "Error", 400
     return "OK", 200
 
-@app.route('/create_transaction/<phone_number>/<username>', methods=['POST'])
-def createTransaction(phone_number, username):
-    data = request.json
-    telecom_pay = data.get('telecom_pay')
-    telecom_receive = data.get('telecom_receive')
-    usage = data.get('usage')
-    try:
-        create_new_transaction(username,phone_number,telecom_pay,telecom_receive,usage)
-    except:
-        return "Error", 400
-    return "OK", 200
+#################### Transaction ####################
+# data: {user, telecom_pay, usage}
+@app.route('/<telecom>/transaction/add', methods=['POST'])
+def add_transaction(telecom):
+    if request.method == 'POST':
+        data = request.get_json()
+        transaction = TransactionClass(data["telecom_pay"])
+        
+        print(data)
+        try:
+            transaction.add(data["user"], data["telecom_pay"],telecom , data["usage"])
+            return 'Success', 200
+        except:
+            return 'Fail', 403
+
+@app.route('/<telecom>/transaction/get', methods=['GET'])
+def get_transactions(telecom):
+    if request.method == 'GET':
+        transaction = TransactionClass(telecom)
+        try:
+            result = transaction.get_all(telecom)
+            return result, 200
+        except:
+            return 'Fail', 403
+
+@app.route('/<telecom>/transaction/remove', methods=['POST'])
+def remove_transactions(telecom):
+    if request.method == 'POST':
+        transaction = TransactionClass(telecom)
+        try:
+            transaction.remove_all(telecom)
+            return 'Success', 200
+        except:
+            return 'Fail', 403
+
+####################### User ########################
+@app.route('/<telecom>/user_usage/get', methods=['GET'])
+def get_user_usage(telecom):
+    if request.method == 'GET':
+        user = UserClass(telecom)
+        try:
+            result = user.get(telecom)
+            return result, 200
+        except:
+            return 'Fail', 403
+        
+@app.route('/<telecom>/user/remove', methods=['POST'])
+def remove_user_usage(telecom):
+    if request.method == 'POST':
+        user = UserClass(telecom)
+        try:
+            user.remove(telecom)
+            return 'Success', 200
+        except:
+            return 'Fail', 403
+        
+####################### Clear #######################
+@app.route('/<telecom>/clear/get', methods=['GET'])
+def get_clear(telecom):
+    if request.method == 'GET':
+        clear = ClearClass(telecom)
+        try:
+            result = clear.get(telecom)
+            return result, 200
+        except:
+            return 'Fail', 403
+        
+@app.route('/<telecom>/clear/remove', methods=['POST'])
+def remove_clear(telecom):
+    if request.method == 'POST':
+        clear = ClearClass(telecom)
+        try:
+            clear.remove(telecom)
+            return 'Success', 200
+        except:
+            return 'Fail', 403
 
 if __name__ == '__main__':
     init_database()
