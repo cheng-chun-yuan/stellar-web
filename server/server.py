@@ -196,11 +196,11 @@ def delete_user_route(phone_number, username):
 def add_transaction(telecom):
     if request.method == 'POST':
         data = request.get_json()
-        transaction = TransactionClass(data["telecom_pay"])
+        transaction = TransactionClass(telecom)
         
         print(data)
         try:
-            transaction.add(data["user"], data["telecom_pay"],telecom , data["usage"])
+            transaction.add(data["user"], data["telecom_pay"], telecom , data["usage"])
             return 'Success', 200
         except:
             return 'Fail', 403

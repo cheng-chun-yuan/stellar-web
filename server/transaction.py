@@ -20,15 +20,14 @@ class TransactionClass:
         return self.auth
 
     def add(self, user, telecom_pay, telecom_receive, usage):
-        print(self.contract, self.auth, user, telecom_pay, telecom_receive, usage)
         try:
             subprocess.run(["soroban", "contract", "invoke", 
                         "--id", self.contract, 
-                        "--source", telecom_pay,
+                        "--source", telecom_receive,
                         "--network", "testnet",
                         "--", 
                         "add_transaction", 
-                        "--auth", 'GDKSU7W2OXVTK2D7K4OU67TFF22VMARBQRX2NC7VCXA2ZOIGKH6JHCUP',
+                        "--auth", self.auth,
                         "--user", user,
                         "--telecom_pay", telecom_pay,
                         "--telecom_receive", telecom_receive,

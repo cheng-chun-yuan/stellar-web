@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Button } from "@/components/ui/button"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { TransactionsTable } from '@/components/Table'
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/tabs"
 
 export function Login({ provider }: { provider: string }) {
+  const [transactions, setTransaction] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     userName: 'enter your name',
     phoneNumber: '09xxxxxxxx',
@@ -80,7 +82,21 @@ export function Login({ provider }: { provider: string }) {
         console.error("Error fetching data:", error);
     }
   };
+  useEffect(() => {
+    const GetTransaction = async () => {
+      console.log('click');
+      try {
+        const transaction = await axios.get(`http://127.0.0.1:5000/${provider}/transaction/get`);
+        setTransaction(transaction.data.TRANSACTIONS);
+        console.log(transactions);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    GetTransaction();
+  }, []);
   return (
+    <div>
     <Tabs defaultValue="Sign up" className="w-[400px]">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="Sign up">Sign up</TabsTrigger>
@@ -145,5 +161,7 @@ export function Login({ provider }: { provider: string }) {
         </Card>
       </TabsContent>
     </Tabs>
+    <TransactionsTable transactions={transactions}/>
+    </div>
   )
 }

@@ -3,7 +3,7 @@ import subprocess
 class UserClass:
     def __init__(self, telecom):
         try:
-            contract_id = subprocess.run(["cat", "../.soroban/arch-id"], check=True, capture_output = True)
+            contract_id = 'CAY6DBQGPW3ISVL2QRPEROAO5JUSW44OQJLEKI43LOCOTA6AAJMUXM7C'
         except:
             raise Exception("Cannot find contract ID!")
         try:
