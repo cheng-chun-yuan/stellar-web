@@ -11,7 +11,7 @@ class UserClass:
         except:
             raise Exception("Cannot find auth ID!")
         
-        self.contract = contract_id.stdout.decode('ascii')[:-1]
+        self.contract = contract_id
         self.auth = auth_id.stdout.decode('ascii')[:-1]
 
     def get(self, telecom):

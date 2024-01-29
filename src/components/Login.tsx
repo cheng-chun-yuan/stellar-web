@@ -1,7 +1,7 @@
-import axios from 'axios'
-import { Button } from "@/components/ui/button"
-import { useState, useEffect } from 'react'
-import { TransactionsTable } from '@/components/Table'
+import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect, ChangeEvent } from "react";
+import { TransactionsTable } from "@/components/Table";
 import {
   Card,
   CardContent,
@@ -9,32 +9,57 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface FormData {
+  user_did: string;
+  phone_number: string;
+  plan: string;
+  provider: string;
+  usage: number;
+}
+interface JsonData {
+  user_did: string;
+  hashed_phone_number: string;
+  plan: string;
+  provider: string;
+  signature: string;
+}
 
 export function Login({ provider }: { provider: string }) {
   const [transactions, setTransaction] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
-    userName: 'enter your name',
-    phoneNumber: '09xxxxxxxx',
-    plan: 'which Plan',
+  const [formData, setFormData] = useState<FormData>({
+    user_did: "enter your name",
+    phone_number: "09xxxxxxxx",
+    plan: "which Plan",
     provider: provider,
     usage: 0,
   });
+  const [JsonData, setJsonData] = useState<JsonData>({
+    user_did: "did:example:789abcdefghi",
+    hashed_phone_number: "hufaesuhoefhuiw",
+    plan: "Bac",
+    provider: "elecom",
+    signature: "wq",
+  });
 
-  const isSignUpNAN = formData.phoneNumber==="" || formData.userName==="" || formData.plan==="" || formData.provider==="";
+  useEffect(() => {
+    console.log(JsonData);
+    console.log(formData);
+  }, [JsonData, formData]);
 
-  const isLoginNAN = formData.phoneNumber==="" || formData.userName==="" ;
+  const isSignUpNAN =
+    formData.phone_number === "" ||
+    formData.user_did === "" ||
+    formData.plan === "" ||
+    formData.provider === "";
 
+  const isLoginNAN = formData.phone_number === "" || formData.user_did === "";
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.id === 'usage') {
+    if (e.target.id === "usage") {
       setFormData({
         ...formData,
         [e.target.id]: parseInt(e.target.value),
@@ -44,124 +69,164 @@ export function Login({ provider }: { provider: string }) {
         ...formData,
         [e.target.id]: e.target.value,
       });
-      console.log(formData);
     }
-    console.log(formData);
+  };
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        try {
+          const text = e.target?.result;
+          const jsonData = text ? JSON.parse(text.toString()) : null;
+          if (jsonData) {
+            console.log(jsonData);
+            // Process your JSON data here
+            // For example, updating the formData state
+            setJsonData(jsonData as JsonData);
+          }
+        } catch (err) {
+          console.error("Error parsing JSON:", err);
+        }
+      };
+      reader.readAsText(file);
+    }
   };
   const HandleDID = async () => {
-    console.log('click');
+    console.log("click");
     try {
-      const res = await axios.get(`http://127.0.0.1:5000/get_provider/${formData.phoneNumber}/${formData.userName}`);
-      console.log(res.data);
-      if (res.data === 'A_Telecom' || res.data === 'B_Telecom' || res.data === 'C_Telecom') {
-        if (res.data === provider) {
-          alert('You are already the member of this telecom');
+      if (
+        JsonData.provider === "A_Telecom" ||
+        JsonData.provider === "B_Telecom" ||
+        JsonData.provider === "C_Telecom"
+      ) {
+        if (JsonData.provider === provider) {
+          alert("You are already the member of this telecom");
           return;
         }
         //link to vietel
-        alert('Login success');
+        alert("Login success");
         await axios.post(`http://127.0.0.1:5000/${provider}/transaction/add`, {
-          "user": formData.userName,
-          "telecom_pay": res.data,
-          "usage": formData.usage
-          });
-      }
-      else{
-        alert('Wrong user name or phone number');
+          user_did: JsonData.user_did,
+          provider: JsonData.provider,
+          signature: JsonData.signature,
+          plan: JsonData.plan,
+          phone_number: JsonData.hashed_phone_number,
+          usage: formData.usage,
+        });
+      } else {
+        alert("Wrong user name or phone number");
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
   const SignUpDID = async () => {
-    console.log('click');
+    console.log("click");
     try {
-        const res = await axios.post('http://127.0.0.1:5000/add_user', formData);
-        console.log(res.data);
+      const res = await axios.post("http://127.0.0.1:5000/add_user", formData);
+      console.log(res.data);
     } catch (error) {
-        console.error("Error fetching data:", error);
+      console.error("Error fetching data:", error);
     }
   };
   useEffect(() => {
     const GetTransaction = async () => {
-      console.log('click');
+      console.log("click");
       try {
-        const transaction = await axios.get(`http://127.0.0.1:5000/${provider}/transaction/get`);
+        const transaction = await axios.get(
+          `http://127.0.0.1:5000/${provider}/transaction/get`
+        );
         setTransaction(transaction.data.TRANSACTIONS);
-        console.log(transactions);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }
+    };
     GetTransaction();
-  }, []);
+  }, [provider]);
   return (
     <div>
-    <Tabs defaultValue="Sign up" className="w-[400px]">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="Sign up">Sign up</TabsTrigger>
-        <TabsTrigger value="Login">Login</TabsTrigger>
-      </TabsList>
-      <TabsContent value="Sign up">
-        <Card>
-          <CardHeader>
-            <CardTitle>Sign up</CardTitle>
-            <CardDescription>
-              Make sure ypur have already registered with your Telcom
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="userName">Name</Label>
-              <Input id="userName" defaultValue={formData.userName}  onChange={(e)=>handleChange(e)}/>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="phoneNumber">PhoneNumber</Label>
-              <Input id="phoneNumber" defaultValue={formData.phoneNumber} onChange={(e)=>handleChange(e)}/>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="plan">Plan</Label>
-              <Input id="plan" defaultValue={formData.plan}  onChange={(e)=>handleChange(e)}/>
-            </div>
-            {/* <div className="space-y-1">
-              <Label htmlFor="provider">Provider</Label>
-              <Input id="provider" defaultValue={formData.provider}  onChange={(e)=>handleChange(e)}/>
-            </div> */}
-          </CardContent>
-          <CardFooter>
-            <Button onClick={SignUpDID} disabled={isSignUpNAN}>Sign up</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-      <TabsContent value="Login">
-        <Card>
-          <CardHeader>
-            <CardTitle>Get Service</CardTitle>
-            <CardDescription>
-                Get DID from your Telcom
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="current">Username</Label>
-              <Input id="userName" defaultValue={formData.userName} onChange={(e)=>handleChange(e)}/>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="new">PhoneNumber</Label>
-              <Input id="phoneNumber"  defaultValue={formData.phoneNumber} onChange={(e)=>handleChange(e)}/>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="new">usage</Label>
-              <Input id="usage" type='number' defaultValue={formData.usage} onChange={(e)=>handleChange(e)}/>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={HandleDID} disabled={isLoginNAN}>Get Service</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
-    </Tabs>
-    <TransactionsTable transactions={transactions}/>
+      <Tabs defaultValue="Login" className="w-[400px]">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="Sign up">Sign up</TabsTrigger>
+          <TabsTrigger value="Login">Verify</TabsTrigger>
+        </TabsList>
+        <TabsContent value="Sign up">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign up</CardTitle>
+              <CardDescription>
+                Make sure ypur have already registered with your Telcom
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="user_did">Name</Label>
+                <Input
+                  id="user_did"
+                  defaultValue={formData.user_did}
+                  onChange={(e) => handleChange(e)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="phone_number">Phone Number</Label>
+                <Input
+                  id="phone_number"
+                  defaultValue={formData.phone_number}
+                  onChange={(e) => handleChange(e)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="plan">Plan</Label>
+                <Input
+                  id="plan"
+                  defaultValue={formData.plan}
+                  onChange={(e) => handleChange(e)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={SignUpDID} disabled={isSignUpNAN}>
+                Sign up
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        <TabsContent value="Login">
+          <Card>
+            <CardHeader>
+              <CardTitle>Get Service</CardTitle>
+              <CardDescription>Get DID from your Telcom</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="fileUpload">Upload JSON File</Label>
+                <Input
+                  id="fileUpload"
+                  type="file"
+                  accept=".json"
+                  onChange={(e) => handleFileChange(e)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="usage">usage</Label>
+                <Input
+                  id="usage"
+                  type="number"
+                  defaultValue={formData.usage}
+                  onChange={(e) => handleChange(e)}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={HandleDID} disabled={isLoginNAN}>
+                Get Service
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      <TransactionsTable transactions={transactions} />
     </div>
-  )
+  );
 }
