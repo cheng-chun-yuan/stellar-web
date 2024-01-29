@@ -2,7 +2,6 @@
 import { Login } from "@/components/Login";
 import { useParams } from "next/navigation";
 import React from "react";
-
 const About: React.FC = () => {
 
   const telecom = useParams().telcomName?.toString();

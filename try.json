@@ -1,0 +1,8 @@
+{
+    "userName": "did:stellar;addcdacscdaf",
+    "phoneNumber": "0987260120",
+    "plan": "C_Plan",
+    "provider": "A_Telecom",
+    "telecom_pay": "A_Telecom",
+    "usage": 200
+}
